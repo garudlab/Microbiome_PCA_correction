@@ -1,91 +1,32 @@
-
+## EXAMPLE:
+### run on command line:
+### Rscript batch_correction_pipeline.R kmer 5 data_directory/ AGP_max PhenoCorrect 20 Instrument 1 1 bin_antibiotic_last_year 0 none 1 Yes
+### run in RStudio:
+#### args = c("kmer", 5, "/Users/leahbriscoe/Documents/MicroBatch/microbatch_vc",
+#### "AGP_max", "PhenoCorrect",20,"Instrument",1,1,"bin_antibiotic_last_year",0,"none",1, "Yes")
 
 args = commandArgs(trailingOnly=TRUE)
 print(args)
-#args = c("otu", "WR_AD","~/Documents/MicroBatch/", "0-0.5","1-2","01/07/2016","DiseaseState","study")
-# args = c("kmer", 6,'/Users/leahbriscoe/Documents/MicroBatch/microbatch_vc/',"AGP_max",
-#          "bmc&ComBat",10,1)
-#table(total_metadata$abdominal_obesity_idf_v2.y)
-#table(total_metadata$diabetes_self_v2)
-#table(total_metadata$diabetes_lab_v2.x)
-# args = c("kmer", 7, "/Users/leahbriscoe/Documents/MicroBatch/microbatch_vc",
-# "CRC", "ComBat",10,"study",1,1,"bin_crc_normal",0,"none",0,0,0,1,1)
-# args = c("otu", 6, "/Users/leahbriscoe/Documents/MicroBatch/microbatch_vc",
-# args = c("otu", 7, "/Users/leahbriscoe/Documents/MicroBatch/microbatch_vc",
-# "CRC", "ComBat",10,"study",1,1,"bin_crc_normal",0,"none",0,0,0,1,1)
 
-#          "CRC_thomas", "ComBat_with_biocovariates_with_seqbatch",-1,"dataset_name",1,1,"bin_crc_normal",0,"logscale",0,0,0)
-# args = c("kmer", 6, "/Users/leahbriscoe/Documents/MicroBatch/microbatch_vc",
-#          "Thomas", "minerva",-1,"dataset_name",1,1,"bin_crc_normal",0,"none",0,0,0)
-
-# args = c("kmer", 5, "/Users/leahbriscoe/Documents/MicroBatch/microbatch_vc",
-# "AGP_max", "minerva",20,"Instrument",1,1,"bin_antibiotic_last_year",0,"clr_scale",0,0,0,1,1)
-# args = c("kmer", 5, "/Users/leahbriscoe/Documents/MicroBatch/microbatch_vc",
-#          "AGP_max", "minerva","1","Instrument",1,1,"bin_antibiotic_last_year",0,"clr_scale",0,0,0,1,"Yes")
-
-# args = c("otu", 5, "/Users/leahbriscoe/Documents/MicroBatch/microbatch_vc",
-#          "AGP_complete", "raw",10,"Instrument",1,1,"bin_antibiotic_last_year",0,"none",0,0,0,1,1)
-
-# args = c("kmer", 5, "/Users/leahbriscoe/Documents/MicroBatch/microbatch_vc",
-# "AGP_max", "PhenoCorrect",20,"Instrument",1,1,"bin_antibiotic_last_year",0,"none",0,0,0,1, "Yes")
-# args = c("kmer", 6, "/Users/leahbriscoe/Documents/MicroBatch/microbatch_vc",
-# "T2D", "smartsva",10,"Instrument",1,1,"bmigrp_c4_v2.x",0,"none",0,0,0,3,1)#3,1)#"1","4")
-# table(total_metadata$antibiotic)
-
-# args = c("kmer", 4, "/Users/leahbriscoe/Documents/MicroBatch/microbatch_vc",
-#          "Hispanic", "smartsva",10,"Instrument",1,1,"mets_idf3_v2",0,"none",1,"1")
-# args = c("kmer", 4, "/Users/leahbriscoe/Documents/MicroBatch/microbatch_vc",
-# "Hispanic", "raw",10,"extraction_robot..exp.",1,1,"bmi_v2",0,"clr_scale")
-
-# args = c("kmer", 6, "/Users/leahbriscoe/Documents/MicroBatch/microbatch_vc",
-#          "PTBmeta", "refactor",10,"study",1,1,"preg_outcome",0,"clr_scale",1,"preterm")
-# 
-# 
-# count = 1
-# for(c in 1:length(colnames(total_metadata))){
-#   data_na_included = as.character(total_metadata[,colnames(total_metadata)[c]])
-#   data_na_included[data_na_included == "Other" | data_na_included == "Not provided" | data_na_included == "other" 
-#                    | data_na_included == '' | data_na_included == 'not applicable' | data_na_included == 'not provided'
-#                    | data_na_included == 'Not applicable'| data_na_included == 'Unspecified'] = NA
-#   
-#   if(length(table(data_na_included))< 15 &length(table(data_na_included))> 1){
-#     print(c)
-#     print(colnames(total_metadata)[c])
-#     print(table(data_na_included))
-#     count = count + 1
-#   }
-# }
-
-#table(total_metadata$income_c5_v2.x)
-#table(total_metadata$income_v2.x)
-#table(total_metadata$diabetes3_v2)
-
-# args = c("otu", 6, "/u/home/b/briscoel/project-halperin/MicroBatch", "AGP_Hfilter",
-#          "smartsva_clr",10,"Instrument",1, "bmi_corrected",0)
 
 # ============================================================================== #
 # user input
 data_type = args[1]#"kmer"
 kmer_len = args[2]#6
-microbatch_folder = args[3]#'/Users/leahbriscoe/Documents/MicroBatch/microbatch_vc/'
+microbatch_folder = args[3]#'directory with folder inside named "data" that has your dataset '
 study_name = args[4]
-methods_list = unlist(strsplit(args[5],"&"))#c("ComBat_with_batch2")#"pca_regress_out_scale","clr_pca_regress_out_no_scale","clr_pca_regress_out_scale") #)#,
+methods_list = unlist(strsplit(args[5],"&")) #All the methods you want to test: ComBat&limma&PCA_correction or if you want to add certain data transformations 
 num_pcs = as.integer(args[6])#5
-batch_column = args[7]
-save_PC_scores = as.logical(as.integer(args[8]))#TRUE
+batch_column = args[7] # which column contains the batch if running ComBat
+save_PC_scores = as.logical(as.integer(args[8])) #TRUE
 filter_low_counts = as.logical(as.integer(args[9]))
 covariate_interest = args[10]
-subsample_bool = 0
+
 use_RMT = as.logical(as.integer(args[11]))
-transformation = args[12]
+transformation = args[12] #clr_scale or clr or none
 if(length(args)> 12){
-  subsample_bool = as.logical(as.integer(args[13]))
-  subsample_prop =as.numeric(args[14])
-  subsample_seed = as.integer(args[15])
-}
-if(length(args)> 15){
-  label_pos_or_neg = as.integer(args[16])
-  target_label = args[17]
+  label_pos_or_neg = as.integer(args[13])
+  target_label = args[14]
 }
 
 # ============================================================================== #
@@ -116,10 +57,8 @@ if(grepl("kmer",data_type)){
 }else{
   output_folder = otu_input_folder
 }
-if(subsample_bool){
-  output_folder = paste0(output_folder, "_subsample_",as.integer(100*subsample_prop),"_seed_",subsample_seed)
-  dir.create(output_folder)
-}
+
+
 
 #otu_table_norm = readRDS(paste0(otu_input_folder,"/otu_table_norm.rds"))
 #otu_table = readRDS(paste0(otu_input_folder,"/otu_table.rds"))
@@ -143,9 +82,6 @@ if(data_type == "kmer"){
   otu_table = readRDS(paste0(otu_input_folder,"/otu_table", file_type,".rds"))
 }
 total_metadata = readRDS(paste0(input_folder,"/metadata.rds"))
-#table(total_metadata$dataset_name,total_metadata$bin_crc_normal)
-#table(total_metadata$study,total_metadata$bin_crc_normal)
-#table(total_metadata$Instrument,total_metadata$bin_antibiotic_last_year)
 
 if(grepl("reprocess",study_name)){
   collection_date=as.Date(total_metadata$collection_timestamp, format="%Y-%m-%d %H:%M")
@@ -154,8 +90,6 @@ if(grepl("reprocess",study_name)){
   
 }
 
-
-#install.packages('SmartSVA')
 if(grepl("AGP",study_name)){
   new_collection_year = total_metadata$collection_year
   new_collection_year[new_collection_year < 2010] = NA
@@ -179,41 +113,6 @@ total_metadata = total_metadata[intersect_samples,]
 sum(is.na(input_abundance_table))
 dim(input_abundance_table)
 ###@@@@@
-
-if(subsample_bool){
-  set.seed(subsample_seed)
-  subsample_samples = sample(colnames(input_abundance_table),size = as.integer(subsample_prop*ncol(input_abundance_table)))
-  
-  
-  
-  if(methods_list == "ProtectPCA" | methods_list == "ProtectPCA_compare"){
-    non_sample_index = which(!(colnames(input_abundance_table) %in% subsample_samples))
-    test_samples  = colnames(input_abundance_table)[non_sample_index]
-    train_samples = subsample_samples
-    
-    
-    test_abundance_table = input_abundance_table[,test_samples]
-    test_metadata = total_metadata[test_samples,]
-    
-    saveRDS(test_metadata,paste0(output_folder,"/metadata.rds"))
-    write.table(test_metadata,paste0(output_folder,"/metadata.txt"),sep="\t",quote=FALSE)
-    
-    #train_abundance_table = input_abundance_table[,subsample_samples]
-    #train_metadata = total_metadata[subsample_samples,]
-    
-  }else{
-    input_abundance_table = input_abundance_table[,subsample_samples]
-    total_metadata = total_metadata[subsample_samples,]
-    saveRDS(total_metadata,paste0(output_folder,"/metadata.rds"))
-    
-    write.table(total_metadata,paste0(output_folder,"/metadata.txt"),sep="\t",quote=FALSE)
-    
-      
-  }
-  
-  
-  
-}
 
 #####@@@
 
@@ -512,7 +411,7 @@ for(m in 1:length(methods_list)){
     batch_corrected_output2 = run_ComBat(mat = batch_corrected_output1, batch_labels2_mod,mod = mod)
     batch_corrected_output = batch_corrected_output2
     
-  }else if(methods_list[m] == "minerva"){
+  }else if(methods_list[m] == "PCA_correction"){
     set.seed(0)
     pca_res = 0
     if(use_RMT){
@@ -580,18 +479,7 @@ for(m in 1:length(methods_list)){
           phenotype = phenotype[not_na_samples]
           
           
-          # time1 = Sys.time()
-          # rf_classifier = randomForest(phenotype ~ ., data=t(corrected_data) , ntree=100, mtry=2, importance=TRUE)
-          # print(Sys.time() - time1)
-          # predict(rf_classifier, t(corrected_data))
-          # 
-          # library(e1071)
-          # time1 = Sys.time()
-          # nb_classifier = naiveBayes(phenotype ~ ., data=t(corrected_data) )
-          # print(Sys.time() - time1)
-          # predict(nb_classifier,t(corrected_data))
-          
-          
+        
           require(caret)
           # set up 10-fold cross validation procedure
           train_control <- trainControl(
@@ -809,14 +697,6 @@ for(m in 1:length(methods_list)){
     
   }else if(methods_list[m ] == "refactor"){
     
-    # rs = rowSums(input_abundance_table)
-    # rv = rowVars(input_abundance_table)
-    # sum(rv < 10e-9)
-    # input_abundance_table_rf = input_abundance_table[(rv > 10e-4),]
-    # dim(input_abudance_table_rf)
-    # dim(input_abundance_table)
-    # 
-    
     require(TCA)
     
     if(use_RMT){
@@ -838,10 +718,6 @@ for(m in 1:length(methods_list)){
     }else{
       refactor_res = refactor(input_abundance_table, k=num_factors,sd_threshold = 0.02)
     }
-    
-    #write.table(input_abundance_table,"~/Downloads/RefactorExample.txt",quote = FALSE,sep = "\t")
-    
-    #sum(rowSums(input_abundance_table[,1:30])==0)
     
     RC = refactor_res$scores
     mat_scaled_corrected<- t(resid(lm(t(input_abundance_table) ~ ., data=data.frame(RC))))
@@ -865,9 +741,6 @@ for(m in 1:length(methods_list)){
       num_factors = num_pcs
     }
     
-    #dim(total_metadata_mod_interest)
-    
-    
     refactor_res = refactor(input_abundance_table, k=num_factors,C=total_metadata_mod_interest, C.remove =TRUE)
     
     RC = refactor_res$scores
@@ -878,9 +751,7 @@ for(m in 1:length(methods_list)){
     #row.names(sv_object_output$scores) = row.names(input_abundance_table)
     batch_corrected_output = mat_scaled_corrected
   }else if(methods_list[m ] =="PhenoCorrect"){
-    
-    
-    
+
     
     batch_labels_factor = factor(batch_labels)
     batch_mat = model.matrix(~batch_labels_factor )
@@ -896,11 +767,7 @@ for(m in 1:length(methods_list)){
     dir.create(output_folder)
     saveRDS(new_metadata,paste0(output_folder,"/metadata.rds"))
     write.table(new_metadata,paste0(output_folder,"/metadata.txt"),sep="\t",quote=FALSE)
-    
-    #phen_correct_matrix = as.matrix(phen_correct)  
-    #colnames(phen_correct_matrix) = colnames(input_abundance_table)
-    
-    #batch_corrected_output = phen_correct_matrix
+
     
   }else if(methods_list[m ] == "DataAugmentation"){
     batch_labels_factor = factor(batch_labels)
@@ -921,12 +788,6 @@ for(m in 1:length(methods_list)){
     message(dim(batch_mat))
     
     input_table_correct<- t(resid(lm(t(input_abundance_table) ~ batch_mat)))
-    
-    #output_folder = paste0(output_folder, "_",methods_list[m])
-    #dir.create(output_folder)
-    #saveRDS(new_metadata,paste0(output_folder,"/metadata.rds"))
-    #write.table(new_metadata,paste0(output_folder,"/metadata.txt"),sep="\t",quote=FALSE)
-    
     batch_corrected_output = input_table_correct 
     
     
@@ -943,11 +804,6 @@ for(m in 1:length(methods_list)){
     dir.create(output_folder)
     saveRDS(new_metadata,paste0(output_folder,"/metadata.rds"))
     write.table(new_metadata,paste0(output_folder,"/metadata.txt"),sep="\t",quote=FALSE)
-    
-    #phen_correct_matrix = as.matrix(phen_correct)  
-    #colnames(phen_correct_matrix) = colnames(input_abundance_table)
-    
-    #batch_corrected_output = phen_correct_matrix
     
   }
   
@@ -993,52 +849,8 @@ for(m in 1:length(methods_list)){
   if(save_PC_scores){
   
     saveRDS(sv_object_output, paste0(output_folder ,"/protect_",covariate_interest,"/SVs_",methods_list[m],extra_file_name,".rds"))
-    
-    # write.table(batch_corrected_outputs[[methods_list[m]]], paste0(output_folder,"/",batch_column,"/BatchCorrected_",methods_list[m],extra_file_name,".txt"),
-    #             sep = "\t",quote = FALSE)
-    
+
   }
-  
-  
-  
-  
-  
+
 }
-
-# write.table(input_abundance_table_clr_scale,paste0(output_folder,"/",batch_column,"/kmer_table_clr_scaled.txt"),
-#             sep = "\t",quote = FALSE)
-# write.table(total_metadata_mod_interest,paste0(output_folder,"/",batch_column,"/bmi_corrected.txt"),
-#             sep = "\t",quote = FALSE)
-#write.table(input_abundance_table ,paste0(kmer_input_folder ,"/BatchCorrected_raw.txt"),sep = "\t",quote = FALSE)
-
-
-#smartsva = readRDS("~/Downloads/batch_correction_outputs.rds")
-#smartsva$smartsva_no_scale
-# 
-# data$df_meta$S = as.integer(as.factor(data$df_meta$study))
-# data$df_meta$DS = as.integer(as.factor(data$df_meta$DiseaseState))
-# 
-# library(variancePartition)
-# dir.create(plot_path)
-# dir.create(paste0(plot_path,"VariancePartition"))
-# for(m in 1:length(methods_list)){
-#   pre = batch_corrected_outputs[[m]]
-#   pre = pre[rowSums(pre)!=0,]
-#   varpar=fitExtractVarPartModel(formula = ~  1 +S + DS, exprObj = pre, data = data$df_meta)
-#   pdf(paste0(plot_path,"VariancePartition/",methods_list[m],".pdf"))
-#   plot(plotVarPart(varpar,main=methods_list[m]))
-#   dev.off()
-# }
-
-# sum(is.na(data$df_otu_clr))
-# colSums(data$df_otu_clr)
-# pca_rel = prcomp(t(data$df_otu_rel_ab))
-# pca_rel$x[,2]
-# source(paste0(main_folder,"ForHoffman/plotting_source.R"))
-# 
-# pca_res = pca_fn(data$df_otu_rel_ab,sample_column_true=TRUE,label_strings=data$df_meta$study,
-#        filename=paste0(plot_path,"PCA/","rel_ab"),title="Pca on rel ab",acomp_version = FALSE)
-
-#length(sv_object_output$svd_result$d)
-#plot(sv_object_output$svd_result$d)
 
